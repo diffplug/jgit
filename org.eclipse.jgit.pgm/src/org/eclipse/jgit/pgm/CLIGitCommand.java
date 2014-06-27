@@ -65,18 +65,30 @@ public class CLIGitCommand {
 	@Argument(index = 1, metaVar = "metaVar_arg")
 	private List<String> arguments = new ArrayList<String>();
 
+	/**
+	 * @return the subcommand which was passed to the command line.
+	 */
 	public TextBuiltin getSubcommand() {
 		return subcommand;
 	}
 
+	/**
+	 * @return the arguments which were passed to the command line.
+	 */
 	public List<String> getArguments() {
 		return arguments;
 	}
 
 	/**
-	 * Executes the given command on the given repository,
-	 * and returns a nicely formatted list of strings even if there's
-	 * a Die exception.
+	 * Executes the given command on the given repository, and returns a nicely
+	 * formatted list of strings even if there's a Die exception.
+	 *
+	 * @param str
+	 *            a single line of command line input.
+	 * @param db
+	 *            the Git database to execute against.
+	 * @return a list of strings representing each line of output
+	 * @throws Exception
 	 */
 	public static List<String> execute(String str, Repository db) throws Exception {
 		try {
@@ -87,8 +99,15 @@ public class CLIGitCommand {
 	}
 
 	/**
-	 * Executes the given command on the given repository, and
-	 * returns a byte[] which is the string result of the command.
+	 * Executes the given command on the given repository, and returns a byte[]
+	 * which is the string result of the command.
+	 *
+	 * @param str
+	 *            a single line of command line input.
+	 * @param db
+	 *            the Git database to execute against.
+	 * @return a byte array representing the text output of the command
+	 * @throws Exception
 	 */
 	public static byte[] rawExecute(String str, Repository db) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -97,13 +116,22 @@ public class CLIGitCommand {
 	}
 
 	/**
-	 * Executes the given command on the given repository, and
-	 * puts the command output on the given OutputStream.
+	 * Executes the given command on the given repository, and puts the command
+	 * output on the given OutputStream.
+	 *
+	 * @param str
+	 *            a single line of command line input.
+	 * @param db
+	 *            the Git database to execute against.
+	 * @param outputStream
+	 *            a stream to write the command's output to.
+	 * @throws Exception
 	 */
 	public static void rawExecute(String str, Repository db, OutputStream outputStream) throws Exception {
 		String[] args = split(str);
-		if (!args[0].equalsIgnoreCase("git") || args.length < 2) {
-			throw new IllegalArgumentException("Expected 'git <command> [<args>]', was:" + str);
+		if (!args[0].equalsIgnoreCase("git") || args.length < 2) { //$NON-NLS-1$
+			throw new IllegalArgumentException(
+					"Expected 'git <command> [<args>]', was:" + str); //$NON-NLS-1$
 		}
 		String[] argv = new String[args.length - 1];
 		System.arraycopy(args, 1, argv, 0, args.length - 1);
