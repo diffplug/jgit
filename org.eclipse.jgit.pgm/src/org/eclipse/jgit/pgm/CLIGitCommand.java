@@ -44,6 +44,7 @@ package org.eclipse.jgit.pgm;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,8 +112,23 @@ public class CLIGitCommand {
 	 */
 	public static byte[] rawExecute(String str, Repository db) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		rawExecute(str, db, baos);
+		rawExecute(str, db, baos, System.err);
 		return baos.toByteArray();
+	}
+
+	/**
+	 * Returns the output encoding appropriate for the given repository. Copied
+	 * from TextBuiltin.init() (line 161 as of now)
+	 *
+	 * @param repository
+	 *            (possibly null)
+	 * @return the encoding
+	 */
+	public static Charset getOutputEncoding(Repository repository) {
+		String encoding = repository != null ? repository.getConfig()
+				.getString("i18n", null, "logOutputEncoding") : null; //$NON-NLS-1$//$NON-NLS-2$
+		return encoding != null ? Charset.forName(encoding) : Charset
+				.defaultCharset();
 	}
 
 	/**
@@ -125,9 +141,13 @@ public class CLIGitCommand {
 	 *            the Git database to execute against.
 	 * @param outputStream
 	 *            a stream to write the command's output to.
+	 * @param errorStream
+	 *            a stream to write the command's error output to.
 	 * @throws Exception
 	 */
-	public static void rawExecute(String str, Repository db, OutputStream outputStream) throws Exception {
+	public static void rawExecute(String str, Repository db,
+			OutputStream outputStream, OutputStream errorStream)
+			throws Exception {
 		String[] args = split(str);
 		if (!args[0].equalsIgnoreCase("git") || args.length < 2) { //$NON-NLS-1$
 			throw new IllegalArgumentException(
@@ -142,6 +162,7 @@ public class CLIGitCommand {
 
 		final TextBuiltin cmd = bean.getSubcommand();
 		cmd.outs = outputStream;
+		cmd.errs = errorStream;
 		if (cmd.requiresRepository()) {
 			cmd.init(db, null);
 		} else {
@@ -152,6 +173,9 @@ public class CLIGitCommand {
 		} finally {
 			if (cmd.outw != null) {
 				cmd.outw.flush();
+			}
+			if (cmd.errw != null) {
+				cmd.errw.flush();
 			}
 		}
 	}
