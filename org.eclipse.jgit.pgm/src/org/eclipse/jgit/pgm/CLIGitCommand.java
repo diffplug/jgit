@@ -43,6 +43,7 @@
 package org.eclipse.jgit.pgm;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -50,8 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.pgm.Die;
-import org.eclipse.jgit.pgm.TextBuiltin;
 import org.eclipse.jgit.pgm.internal.CLIText;
 import org.eclipse.jgit.pgm.opt.CmdLineParser;
 import org.eclipse.jgit.pgm.opt.SubcommandHandler;
@@ -112,7 +111,7 @@ public class CLIGitCommand {
 	 */
 	public static byte[] rawExecute(String str, Repository db) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		rawExecute(str, db, baos, System.err);
+		rawExecute(str, db, null, baos, System.err);
 		return baos.toByteArray();
 	}
 
@@ -139,13 +138,15 @@ public class CLIGitCommand {
 	 *            a single line of command line input.
 	 * @param db
 	 *            the Git database to execute against.
+	 * @param gitDir
+	 *            the directory to execute in (mutually-exclusive with db)
 	 * @param outputStream
 	 *            a stream to write the command's output to.
 	 * @param errorStream
 	 *            a stream to write the command's error output to.
 	 * @throws Exception
 	 */
-	public static void rawExecute(String str, Repository db,
+	public static void rawExecute(String str, Repository db, File gitDir,
 			OutputStream outputStream, OutputStream errorStream)
 			throws Exception {
 		String[] args = split(str);
@@ -163,11 +164,7 @@ public class CLIGitCommand {
 		final TextBuiltin cmd = bean.getSubcommand();
 		cmd.outs = outputStream;
 		cmd.errs = errorStream;
-		if (cmd.requiresRepository()) {
-			cmd.init(db, null);
-		} else {
-			cmd.init(null, null);
-		}
+		cmd.init(db, gitDir == null ? null : gitDir.getAbsolutePath());
 		try {
 			cmd.execute(bean.getArguments().toArray(new String[bean.getArguments().size()]));
 		} finally {
