@@ -54,16 +54,22 @@ import org.kohsuke.args4j.Option;
 @Command(common = true, usage = "usage_addFileContentsToTheIndex")
 class Add extends TextBuiltin {
 
+	@Option(name = "--all", aliases = { "-A" }, usage = "usage_addAll")
+	private boolean all = false;
+
 	@Option(name = "--update", aliases = { "-u" }, usage = "usage_onlyMatchAgainstAlreadyTrackedFiles")
 	private boolean update = false;
 
-	@Argument(required = true, metaVar = "metaVar_filepattern", usage = "usage_filesToAddContentFrom")
+	@Argument(required = false, metaVar = "metaVar_filepattern", usage = "usage_filesToAddContentFrom")
 	private List<String> filepatterns = new ArrayList<String>();
 
 	@Override
 	protected void run() throws Exception {
 		AddCommand addCmd = new Git(db).add();
 		addCmd.setUpdate(update);
+		if (all) {
+			addCmd.addFilepattern("."); //$NON-NLS-1$
+		}
 		for (String p : filepatterns)
 			addCmd.addFilepattern(p);
 		addCmd.call();
