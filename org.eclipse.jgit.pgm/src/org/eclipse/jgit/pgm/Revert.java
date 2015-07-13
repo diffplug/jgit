@@ -3,8 +3,8 @@ package org.eclipse.jgit.pgm;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jgit.api.CherryPickCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.RevertCommand;
 import org.eclipse.jgit.lib.ObjectId;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
@@ -12,8 +12,8 @@ import org.kohsuke.args4j.Option;
 /**
  * Implementation of git cherry-pick, but only the non-committing king
  */
-@Command(common = true, usage = "usage_cherryPick")
-public class CherryPick extends TextBuiltin {
+@Command(common = true, usage = "usage_revert")
+public class Revert extends TextBuiltin {
 	@Argument(required = true, metaVar = "metaVar_commitish")
 	private List<String> commits = new ArrayList<String>();
 
@@ -23,14 +23,14 @@ public class CherryPick extends TextBuiltin {
 	@Override
 	protected void run() {
 		try (Git git = new Git(db)) {
-			CherryPickCommand cherryPick = git.cherryPick();
+			RevertCommand revert = git.revert();
 			for (String commit : commits) {
-				cherryPick.include(ObjectId.fromString(commit));
+				revert.include(ObjectId.fromString(commit));
 			}
-			cherryPick.setNoCommit(noCommit);
+			revert.setNoCommit(noCommit);
 
 			try {
-				cherryPick.call();
+				revert.call();
 			} catch (Exception e) {
 				throw die(e.getMessage(), e);
 			}
