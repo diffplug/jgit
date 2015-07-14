@@ -43,7 +43,6 @@
 
 package org.eclipse.jgit.pgm;
 
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.RefUpdate.Result;
@@ -68,7 +67,7 @@ class UpdateRef extends TextBuiltin {
 		RefUpdate update = db.updateRef(ref, detach);
 
 		// set the object, person, and message
-		update.setNewObjectId(ObjectId.fromString(newValue));
+		update.setNewObjectId(db.resolve(newValue + "^{commit}")); //$NON-NLS-1$
 		update.setRefLogIdent(new PersonIdent(db));
 
 		// the raw command assumes force
@@ -83,7 +82,7 @@ class UpdateRef extends TextBuiltin {
 		// do the update and check the result
 		Result result = update.update();
 		if (result != Result.FORCED) {
-			throw die("Unexpected result " + result);
+			throw die("Unexpected result " + result); //$NON-NLS-1$
 		}
 	}
 }
