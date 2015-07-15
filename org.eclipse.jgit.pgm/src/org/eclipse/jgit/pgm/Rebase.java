@@ -44,9 +44,16 @@
 
 package org.eclipse.jgit.pgm;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RebaseCommand;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.lib.TextProgressMonitor;
+import org.eclipse.jgit.merge.ResolveMerger.MergeFailureReason;
+import org.eclipse.jgit.util.io.ThrowingPrintWriter;
 import org.kohsuke.args4j.Argument;
 
 @Command(common = false, usage = "usage_Rebase")
@@ -60,7 +67,39 @@ class Rebase extends TextBuiltin {
 			RebaseCommand rebase = git.rebase();
 			rebase.setProgressMonitor(new TextProgressMonitor(outw));
 			rebase.setUpstream(upstream);
-			rebase.call();
+			RebaseResult result = rebase.call();
+			if (result.getStatus().isSuccessful()) {
+				success(outw);
+			} else {
+				error(errw, result.getStatus(), result.getConflicts(),
+						result.getFailingPaths());
+			}
+		}
+	}
+
+	@SuppressWarnings("nls")
+	static void success(ThrowingPrintWriter writer) throws IOException {
+		writer.println("Success!");
+	}
+
+	@SuppressWarnings("nls")
+	static void error(ThrowingPrintWriter writer, Object reason,
+			List<String> conflicts, Map<String, MergeFailureReason> failingPaths)
+			throws IOException {
+		writer.println("Error! " + reason);
+		if (conflicts != null && !conflicts.isEmpty()) {
+			writer.println("Conflicts:");
+			for (String conflict : conflicts) {
+				writer.println("\t" + conflict);
+			}
+		}
+		if (!failingPaths.isEmpty()) {
+			writer.println("Failures:");
+			for (Map.Entry<String, MergeFailureReason> conflict : failingPaths
+					.entrySet()) {
+				writer.println("\t" + conflict.getKey() + ": "
+						+ conflict.getValue());
+			}
 		}
 	}
 }
