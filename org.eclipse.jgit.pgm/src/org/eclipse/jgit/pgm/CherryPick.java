@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jgit.api.CherryPickCommand;
+import org.eclipse.jgit.api.CherryPickResult;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.kohsuke.args4j.Argument;
@@ -21,7 +22,7 @@ public class CherryPick extends TextBuiltin {
 	private boolean noCommit;
 
 	@Override
-	protected void run() {
+	protected void run() throws Exception {
 		try (Git git = new Git(db)) {
 			CherryPickCommand cherryPick = git.cherryPick();
 			for (String commit : commits) {
@@ -29,10 +30,12 @@ public class CherryPick extends TextBuiltin {
 			}
 			cherryPick.setNoCommit(noCommit);
 
-			try {
-				cherryPick.call();
-			} catch (Exception e) {
-				throw die(e.getMessage(), e);
+			CherryPickResult result = cherryPick.call();
+			if (result.getStatus() == CherryPickResult.CherryPickStatus.OK) {
+				Rebase.success(outw);
+			} else {
+				Rebase.error(errw, result.getStatus(), null,
+						result.getFailingPaths());
 			}
 		}
 	}

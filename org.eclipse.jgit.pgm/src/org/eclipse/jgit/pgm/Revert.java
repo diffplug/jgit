@@ -6,6 +6,7 @@ import java.util.List;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RevertCommand;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
@@ -21,7 +22,7 @@ public class Revert extends TextBuiltin {
 	private boolean noCommit;
 
 	@Override
-	protected void run() {
+	protected void run() throws Exception {
 		try (Git git = new Git(db)) {
 			RevertCommand revert = git.revert();
 			for (String commit : commits) {
@@ -30,7 +31,15 @@ public class Revert extends TextBuiltin {
 			revert.setNoCommit(noCommit);
 
 			try {
-				revert.call();
+				RevCommit result = revert.call();
+				if (result != null) {
+					Rebase.success(outw);
+				} else {
+					Rebase.error(errw, revert.getFailingResult()
+							.getMergeStatus(), revert.getFailingResult()
+							.getCheckoutConflicts(), revert.getFailingResult()
+							.getFailingPaths());
+				}
 			} catch (Exception e) {
 				throw die(e.getMessage(), e);
 			}
