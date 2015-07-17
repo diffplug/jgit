@@ -218,13 +218,6 @@ public class CLIGitCommand {
 					inquote = !inquote;
 				}
 				continue;
-			case '\\':
-				if (inquote || ip == commandLine.length()) {
-					r.append(b); // literal within a quote
-				} else {
-					r.append(commandLine.charAt(ip++));
-				}
-				continue;
 			default:
 				r.append(b);
 				continue;
