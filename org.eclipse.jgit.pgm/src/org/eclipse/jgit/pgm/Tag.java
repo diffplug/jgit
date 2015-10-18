@@ -72,7 +72,7 @@ class Tag extends TextBuiltin {
 	private boolean delete;
 
 	@Option(name = "-m", metaVar = "metaVar_message", usage = "usage_tagMessage")
-	private String message = ""; //$NON-NLS-1$
+	private String message;
 
 	@Argument(index = 0, metaVar = "metaVar_name")
 	private String tagName;
@@ -88,8 +88,12 @@ class Tag extends TextBuiltin {
 					git.tagDelete().setTags(tagName).call();
 				} else {
 					TagCommand command = git.tag().setForceUpdate(force)
-							.setMessage(message).setName(tagName);
-
+							.setName(tagName);
+					if (message != null) {
+						command.setAnnotated(true).setMessage(message);
+					} else {
+						command.setAnnotated(false);
+					}
 					if (object != null) {
 						try (RevWalk walk = new RevWalk(db)) {
 							command.setObjectId(walk.parseAny(object));
