@@ -77,7 +77,7 @@ class Reset extends TextBuiltin {
 			if (hard)
 				mode = selectMode(mode, ResetType.HARD);
 			if (mode == null)
-				throw die("no reset mode set");
+				mode = selectMode(mode, ResetType.MIXED);
 			command.setMode(mode);
 			command.call();
 		}
