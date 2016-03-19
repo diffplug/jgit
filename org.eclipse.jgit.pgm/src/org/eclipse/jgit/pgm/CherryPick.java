@@ -77,7 +77,7 @@ public class CherryPick extends TextBuiltin {
 			if (result.getStatus() == CherryPickResult.CherryPickStatus.OK) {
 				Rebase.success(outw);
 			} else {
-				Rebase.error(errw, result.getStatus(), null,
+				throw Rebase.error(errw, result.getStatus(), null,
 						result.getFailingPaths());
 			}
 		}

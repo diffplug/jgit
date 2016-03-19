@@ -73,18 +73,14 @@ public class Revert extends TextBuiltin {
 			}
 			revert.setNoCommit(noCommit);
 
-			try {
-				RevCommit result = revert.call();
-				if (result != null) {
-					Rebase.success(outw);
-				} else {
-					Rebase.error(errw,
-							revert.getFailingResult().getMergeStatus(),
-							revert.getFailingResult().getCheckoutConflicts(),
-							revert.getFailingResult().getFailingPaths());
-				}
-			} catch (Exception e) {
-				throw die(e.getMessage(), e);
+			RevCommit result = revert.call();
+			if (result != null) {
+				Rebase.success(outw);
+			} else {
+				throw Rebase.error(errw,
+						revert.getFailingResult().getMergeStatus(),
+						revert.getFailingResult().getCheckoutConflicts(),
+						revert.getFailingResult().getFailingPaths());
 			}
 		}
 	}

@@ -70,7 +70,7 @@ class Rebase extends TextBuiltin {
 			if (result.getStatus().isSuccessful()) {
 				success(outw);
 			} else {
-				error(errw, result.getStatus(), result.getConflicts(),
+				throw error(errw, result.getStatus(), result.getConflicts(),
 						result.getFailingPaths());
 			}
 		}
@@ -82,7 +82,7 @@ class Rebase extends TextBuiltin {
 	}
 
 	@SuppressWarnings("nls")
-	static void error(ThrowingPrintWriter writer, Object reason,
+	static Die error(ThrowingPrintWriter writer, Object reason,
 			List<String> conflicts,
 			Map<String, MergeFailureReason> failingPaths) throws IOException {
 		writer.println("Error! " + reason);
@@ -100,5 +100,6 @@ class Rebase extends TextBuiltin {
 						"\t" + conflict.getKey() + ": " + conflict.getValue());
 			}
 		}
+		return new Die(reason.toString());
 	}
 }
